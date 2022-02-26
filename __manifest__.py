@@ -9,8 +9,8 @@
         Odoo API XMLRPC Style
     """,
 
-    'author': "Moldeo Interactive",
-    'website': "https://www.moldeointeractive.com.ar",
+    'author': "Codize",
+    'website': "https://www.codize.ar",
 
     'category': 'Uncategorized',
     'version': '0.1',
