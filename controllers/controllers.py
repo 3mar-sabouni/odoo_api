@@ -16,9 +16,15 @@ class OdooApiXMLRPC(http.Controller):
     @http.route('/odoo-api/common/version', type="json", auth='none', cors=CORS)
     def odoo_api_version(self, **kw):
         version = odoo.release.version.split('.')
+        # Try int ( error on Odoo 12 )
+        try:
+            server_version_info = [int(version[0]), int(version[1]), 0, "final", 0]
+        except:
+            server_version_info = [str(version[0]), str(version[1]), 0, "final", 0]
+
         return {
             "server_version": version[0] + "." + version[1],
-            "server_version_info": [int(version[0]), int(version[1]), 0, "final", 0],
+            "server_version_info": server_version_info,
             "server_serie": version[0] + "." + version[1],
             "protocol_version": 1,
         }
