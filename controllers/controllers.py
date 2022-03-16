@@ -34,7 +34,10 @@ class OdooApiXMLRPC(http.Controller):
     def odoo_api_login(self, db=None, login=None, password=None, **kw):
         try:
             uid = request.session.authenticate(db, login, password)
-            return uid
+            return {
+                "user_uid": uid,
+                "authentification": True
+            }
         except Exception as e:
             return {'status': False, 'error': str(e)}
 
