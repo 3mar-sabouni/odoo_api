@@ -140,6 +140,30 @@ class OdooApiXMLRPC(http.Controller):
     # write #
     @http.route('/odoo-api/object/write', type="json", auth='none', cors=CORS)
     def odoo_api_write(self, model, id=None, vals={}, db=None, login=None, password=None, attributes=None, **kw):
+        """
+              ``(0, 0, values)``
+              adds a new record created from the provided ``value`` dict.
+          ``(1, id, values)``
+              updates an existing record of id ``id`` with the values in
+              ``values``. Can not be used in :meth:`~.create`.
+          ``(2, id, 0)``
+              removes the record of id ``id`` from the set, then deletes it
+              (from the database). Can not be used in :meth:`~.create`.
+          ``(3, id, 0)``
+              removes the record of id ``id`` from the set, but does not
+              delete it. Can not be used in
+              :meth:`~.create`.
+          ``(4, id, 0)``
+              adds an existing record of id ``id`` to the set.
+          ``(5, 0, 0)``
+              removes all records from the set, equivalent to using the
+              command ``3`` on every record explicitly. Can not be used in
+              :meth:`~.create`.
+          ``(6, 0, ids)``
+              replaces all existing records in the set by the ``ids`` list,
+              equivalent to using the command ``5`` followed by a command
+              ``4`` for each ``id`` in ``ids``.
+        """
         try:
             uid = request.session.authenticate(db, login, password)
             if uid:
