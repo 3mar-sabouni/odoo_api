@@ -10,8 +10,10 @@ import odoo
 from odoo import http
 from odoo.http import request
 import re
+
 _logger = logging.getLogger(__name__)
 CORS = '*'
+
 
 class OdooApiXMLRPC(http.Controller):
     # version #
@@ -49,12 +51,12 @@ class OdooApiXMLRPC(http.Controller):
         try:
             uid = request.session.authenticate(db, login, password)
             if uid:
-                attributes=None
-                allfields=None
+                attributes = None
+                allfields = None
                 if 'attributes' in keys.keys():
-                    attributes=keys['attributes']
+                    attributes = keys['attributes']
                 if 'allfields' in keys.keys():
-                    allfields=keys['allfields']
+                    allfields = keys['allfields']
 
                 return request.env[model].browse(uid).fields_get(attributes=attributes, allfields=allfields)
         except Exception as e:
@@ -76,22 +78,23 @@ class OdooApiXMLRPC(http.Controller):
         try:
             uid = request.session.authenticate(db, login, password)
             if uid:
-                limit=None
-                offset=None
-                order=None
-                count=False
+                limit = None
+                offset = None
+                order = None
+                count = False
 
                 if 'limit' in keys.keys():
-                    limit=keys['limit']
+                    limit = keys['limit']
                 if 'offset' in keys.keys():
-                    offset=keys['offset']
+                    offset = keys['offset']
                 if 'order' in keys.keys():
-                    order=keys['order']
+                    order = keys['order']
                 if 'count' in keys.keys():
-                    count=keys['count']
+                    count = keys['count']
 
                 ans = []
-                model = request.env[model].browse(uid).search(filters, limit=limit, offset=offset, order=order, count=count)
+                model = request.env[model].browse(uid).search(filters, limit=limit, offset=offset, order=order,
+                                                              count=count)
                 for m in model:
                     ans.append(m.id)
                 return ans
@@ -104,10 +107,10 @@ class OdooApiXMLRPC(http.Controller):
         try:
             uid = request.session.authenticate(db, login, password)
             if uid:
-                fields=None
+                fields = None
 
                 if 'fields' in keys.keys():
-                    fields=keys['fields']
+                    fields = keys['fields']
 
                 model = request.env[model].browse(uid).browse(ids).read(fields=fields)
                 return model
@@ -116,25 +119,27 @@ class OdooApiXMLRPC(http.Controller):
 
     # search_read #
     @http.route('/odoo-api/object/search_read', type="json", auth='none', cors=CORS)
-    def odoo_api_search_read(self, model, filters=None, keys={}, db=None, login=None, password=None, attributes=None, **kw):
+    def odoo_api_search_read(self, model, filters=None, keys={}, db=None, login=None, password=None, attributes=None,
+                             **kw):
         try:
             uid = request.session.authenticate(db, login, password)
             if uid:
-                limit=None
-                offset=0
-                order=None
-                fields=None
+                limit = None
+                offset = 0
+                order = None
+                fields = None
 
                 if 'limit' in keys.keys():
-                    limit=keys['limit']
+                    limit = keys['limit']
                 if 'offset' in keys.keys():
-                    offset=keys['offset']
+                    offset = keys['offset']
                 if 'order' in keys.keys():
-                    order=keys['order']
+                    order = keys['order']
                 if 'fields' in keys.keys():
-                    fields=keys['fields']
+                    fields = keys['fields']
 
-                model = request.env[model].browse(uid).search_read(filters, limit=limit, offset=offset, order=order, fields=fields)
+                model = request.env[model].browse(uid).search_read(filters, limit=limit, offset=offset, order=order,
+                                                                   fields=fields)
                 return model
         except Exception as e:
             return {'status': False, 'error': str(e)}
@@ -197,19 +202,35 @@ class OdooApiXMLRPC(http.Controller):
         except Exception as e:
             return {'status': False, 'error': str(e)}
 
-
     # unlink #
     @http.route('/odoo-api/object/action', type="json", auth='none', cors=CORS)
-    def odoo_api_action(self, model, id=None, action=None, vals={}, db=None, login=None, password=None, attributes=None, **kw):
+    def odoo_api_action(self, model, id=None, action=None, vals={}, db=None, login=None, password=None, attributes=None,
+                        **kw):
         try:
             uid = request.session.authenticate(db, login, password)
             if uid:
-                model = request.env[model].browse(uid).browse(id)
                 _logger.info(f"MODEL : {model} - ACTION : {action} - VALS : {vals} - ATTRIBUTES : {attributes}")
-                getattr(model, action)(**vals)
+                if action == "action_create_payments" and model == "account.move":
+
+                    payment_register = request.env['account.payment.register'].browse(uid)
+                    _action = payment_register.with_context(
+                        {'active_model': 'account.move',
+                         'active_ids': id}
+                    ).create({}).action_create_payments()
+
+                else :
+                    model = request.env[model].browse(uid).browse(id)
+                    _action = getattr(model, action)(**vals)
+
+
+
                 # import ipdb; ipdb.set_trace()
                 # model.action_post()
                 # model.action_invoice_paid()
-                return model
+                return {
+                    "model": model,
+                    "action": action,
+                    "return": _action
+                }
         except Exception as e:
             return {'status': False, 'error': str(e)}
