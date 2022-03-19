@@ -4,11 +4,13 @@
 # Codize - https://www.codize.ar
 
 # -*- coding: utf-8 -*-
+import logging
+
 import odoo
 from odoo import http
 from odoo.http import request
 import re
-
+_logger = logging.getLogger(__name__)
 CORS = '*'
 
 class OdooApiXMLRPC(http.Controller):
@@ -175,6 +177,7 @@ class OdooApiXMLRPC(http.Controller):
     # create #
     @http.route('/odoo-api/object/create', type="json", auth='none', cors=CORS)
     def odoo_api_create(self, model, vals={}, db=None, login=None, password=None, attributes=None, **kw):
+        _logger.info(f"odoo_api_create : {vals}")
         try:
             uid = request.session.authenticate(db, login, password)
             if uid:
@@ -190,6 +193,23 @@ class OdooApiXMLRPC(http.Controller):
             uid = request.session.authenticate(db, login, password)
             if uid:
                 model = request.env[model].browse(uid).browse(id).unlink()
+                return model
+        except Exception as e:
+            return {'status': False, 'error': str(e)}
+
+
+    # unlink #
+    @http.route('/odoo-api/object/action', type="json", auth='none', cors=CORS)
+    def odoo_api_action(self, model, id=None, action=None, vals={}, db=None, login=None, password=None, attributes=None, **kw):
+        try:
+            uid = request.session.authenticate(db, login, password)
+            if uid:
+                model = request.env[model].browse(uid).browse(id)
+                _logger.info(f"MODEL : {model} - ACTION : {action} - VALS : {vals} - ATTRIBUTES : {attributes}")
+                getattr(model, action)(**vals)
+                # import ipdb; ipdb.set_trace()
+                # model.action_post()
+                # model.action_invoice_paid()
                 return model
         except Exception as e:
             return {'status': False, 'error': str(e)}
