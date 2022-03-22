@@ -182,7 +182,7 @@ class OdooApiXMLRPC(http.Controller):
     # create #
     @http.route('/odoo-api/object/create', type="json", auth='none', cors=CORS)
     def odoo_api_create(self, model, vals={}, db=None, login=None, password=None, attributes=None, **kw):
-        _logger.info(f"odoo_api_create : {vals}")
+        # _logger.info(f"odoo_api_create : {vals}")
         try:
             uid = request.session.authenticate(db, login, password)
             if uid:
@@ -209,7 +209,7 @@ class OdooApiXMLRPC(http.Controller):
         try:
             uid = request.session.authenticate(db, login, password)
             if uid:
-                _logger.info(f"MODEL : {model} - ACTION : {action} - VALS : {vals} - ATTRIBUTES : {attributes}")
+                # _logger.info(f"MODEL : {model} - ACTION : {action} - VALS : {vals} - ATTRIBUTES : {attributes}")
                 if action == "action_create_payments" and model == "account.move":
 
                     payment_register = request.env['account.payment.register'].browse(uid)
