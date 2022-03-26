@@ -10,6 +10,7 @@ import odoo
 from odoo import http
 from odoo.http import request
 import re
+import xmlrpc.client
 
 _logger = logging.getLogger(__name__)
 CORS = '*'
@@ -17,26 +18,29 @@ CORS = '*'
 
 class OdooApiXMLRPC(http.Controller):
     # version #
+    '''
+    import ipdb; ipdb.set_trace()
+    bash entrypoint.sh --dev reload
+    common = xmlrpc.client.ServerProxy('http://127.0.0.1:8069/xmlrpc/2/common')
+    common.version()
+    uid = common.authenticate(db, login, password, {})
+    '''
+
+    # def __init__(self):
+    #     super().__init__()
+    #     self.common = xmlrpc.client.ServerProxy('http://127.0.0.1:8069/xmlrpc/2/common')
+
     @http.route('/odoo-api/common/version', type="json", auth='none', cors=CORS)
     def odoo_api_version(self, **kw):
-        version = odoo.release.version.split('.')
-        # Try int ( error on Odoo 12 )
-        try:
-            server_version_info = [int(version[0]), int(version[1]), 0, "final", 0]
-        except:
-            server_version_info = [str(version[0]), str(version[1]), 0, "final", 0]
-
-        return {
-            "server_version": version[0] + "." + version[1],
-            "server_version_info": server_version_info,
-            "server_serie": version[0] + "." + version[1],
-            "protocol_version": 1,
-        }
+        common = xmlrpc.client.ServerProxy('http://127.0.0.1:8069/xmlrpc/2/common')
+        return common.version()
 
     # login #
     @http.route('/odoo-api/common/login', type="json", auth='none', cors=CORS)
     def odoo_api_login(self, db=None, login=None, password=None, **kw):
         try:
+            # uid = self.common.authenticate(db, login, password, {})
+            # another way :
             uid = request.session.authenticate(db, login, password)
             return {
                 "user_uid": uid,
