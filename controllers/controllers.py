@@ -16,6 +16,8 @@ _logger = logging.getLogger(__name__)
 CORS = '*'
 
 
+
+
 class OdooApiXMLRPC(http.Controller):
     # version #
     '''
