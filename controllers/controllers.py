@@ -15,23 +15,8 @@ import xmlrpc.client
 _logger = logging.getLogger(__name__)
 CORS = '*'
 
-
-
-
 class OdooApiXMLRPC(http.Controller):
     # version #
-    '''
-    import ipdb; ipdb.set_trace()
-    bash entrypoint.sh --dev reload
-    common = xmlrpc.client.ServerProxy('http://127.0.0.1:8069/xmlrpc/2/common')
-    common.version()
-    uid = common.authenticate(db, login, password, {})
-    '''
-
-    # def __init__(self):
-    #     super().__init__()
-    #     self.common = xmlrpc.client.ServerProxy('http://127.0.0.1:8069/xmlrpc/2/common')
-
     @http.route('/odoo-api/common/version', type="json", auth='none', cors=CORS)
     def odoo_api_version(self, **kw):
         common = xmlrpc.client.ServerProxy('http://127.0.0.1:8069/xmlrpc/2/common')
@@ -41,8 +26,6 @@ class OdooApiXMLRPC(http.Controller):
     @http.route('/odoo-api/common/login', type="json", auth='none', cors=CORS)
     def odoo_api_login(self, db=None, login=None, password=None, **kw):
         try:
-            # uid = self.common.authenticate(db, login, password, {})
-            # another way :
             uid = request.session.authenticate(db, login, password)
             return {
                 "user_uid": uid,
@@ -154,7 +137,8 @@ class OdooApiXMLRPC(http.Controller):
     @http.route('/odoo-api/object/write', type="json", auth='none', cors=CORS)
     def odoo_api_write(self, model, id=None, vals={}, db=None, login=None, password=None, attributes=None, **kw):
         """
-              ``(0, 0, values)``
+          Doc for One2many & Many2many
+          ``(0, 0, values)``
               adds a new record created from the provided ``value`` dict.
           ``(1, id, values)``
               updates an existing record of id ``id`` with the values in
@@ -188,7 +172,6 @@ class OdooApiXMLRPC(http.Controller):
     # create #
     @http.route('/odoo-api/object/create', type="json", auth='none', cors=CORS)
     def odoo_api_create(self, model, vals={}, db=None, login=None, password=None, attributes=None, **kw):
-        # _logger.info(f"odoo_api_create : {vals}")
         try:
             uid = request.session.authenticate(db, login, password)
             if uid:
@@ -208,25 +191,22 @@ class OdooApiXMLRPC(http.Controller):
         except Exception as e:
             return {'status': False, 'error': str(e)}
 
-    # unlink #
-    @http.route('/odoo-api/object/action', type="json", auth='none', cors=CORS)
-    def odoo_api_action(self, model, id=None, action=None, vals={}, db=None, login=None, password=None, attributes=None,
-                        **kw):
-        try:
-            uid = request.session.authenticate(db, login, password)
-            if uid:
-                # _logger.info(f"MODEL : {model} - ACTION : {action} - VALS : {vals} - ATTRIBUTES : {attributes}")
-                if action == "action_create_payments" and model == "account.move":
-
-                    payment_register = request.env['account.payment.register'].browse(uid)
-                    _action = payment_register.with_context(
-                        {'active_model': 'account.move',
-                         'active_ids': id}
-                    ).create({}).action_create_payments()
-
-                else :
-                    model = request.env[model].browse(uid).browse(id)
-                    _action = getattr(model, action)(**vals)
+    # action #
+    # Model for action request, adapt for your need
+    #@http.route('/odoo-api/object/action', type="json", auth='none', cors=CORS)
+    #def odoo_api_action(self, model, id=None, action=None, vals={}, db=None, login=None, password=None, attributes=None, **kw):
+    #    try:
+    #        uid = request.session.authenticate(db, login, password)
+    #        if uid:
+    #            if action == "action_create_payments" and model == "account.move":
+    #                payment_register = request.env['account.payment.register'].browse(uid)
+    #                _action = payment_register.with_context(
+    #                    {'active_model': 'account.move',
+    #                     'active_ids': id}
+    #                ).create({}).action_create_payments()
+    #            else :
+    #                model = request.env[model].browse(uid).browse(id)
+    #                _action = getattr(model, action)(**vals)
 
 
 
