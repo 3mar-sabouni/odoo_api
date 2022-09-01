@@ -207,16 +207,10 @@ class OdooApiXMLRPC(http.Controller):
     #            else :
     #                model = request.env[model].browse(uid).browse(id)
     #                _action = getattr(model, action)(**vals)
-
-
-
-                # import ipdb; ipdb.set_trace()
-                # model.action_post()
-                # model.action_invoice_paid()
-                return {
-                    "model": model,
-                    "action": action,
-                    "return": _action
-                }
-        except Exception as e:
-            return {'status': False, 'error': str(e)}
+    #            return {
+    #                "model": model,
+    #                "action": action,
+    #                "return": _action
+    #            }
+    #    except Exception as e:
+    #        return {'status': False, 'error': str(e)}
