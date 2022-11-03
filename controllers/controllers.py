@@ -71,6 +71,7 @@ class OdooApiXMLRPC(http.Controller):
                 offset = None
                 order = None
                 count = False
+                context={}
 
                 if 'limit' in keys.keys():
                     limit = keys['limit']
@@ -80,10 +81,11 @@ class OdooApiXMLRPC(http.Controller):
                     order = keys['order']
                 if 'count' in keys.keys():
                     count = keys['count']
+                if 'context' in keys.keys():
+                    context=keys['context']
 
                 ans = []
-                model = request.env[model].browse(uid).search(filters, limit=limit, offset=offset, order=order,
-                                                              count=count)
+                model = request.env[model].browse(uid).with_context(context).search(filters, limit=limit, offset=offset, order=order, count=count)
                 for m in model:
                     ans.append(m.id)
                 return ans
@@ -108,8 +110,7 @@ class OdooApiXMLRPC(http.Controller):
 
     # search_read #
     @http.route('/odoo-api/object/search_read', type="json", auth='none', cors=CORS)
-    def odoo_api_search_read(self, model, filters=None, keys={}, db=None, login=None, password=None, attributes=None,
-                             **kw):
+    def odoo_api_search_read(self, model, filters=None, keys={}, db=None, login=None, password=None, attributes=None, **kw):
         try:
             uid = request.session.authenticate(db, login, password)
             if uid:
@@ -117,6 +118,7 @@ class OdooApiXMLRPC(http.Controller):
                 offset = 0
                 order = None
                 fields = None
+                context={}
 
                 if 'limit' in keys.keys():
                     limit = keys['limit']
@@ -126,9 +128,10 @@ class OdooApiXMLRPC(http.Controller):
                     order = keys['order']
                 if 'fields' in keys.keys():
                     fields = keys['fields']
+                if 'context' in keys.keys():
+                    context=keys['context']
 
-                model = request.env[model].browse(uid).search_read(filters, limit=limit, offset=offset, order=order,
-                                                                   fields=fields)
+                model = request.env[model].browse(uid).with_context(context).search_read(filters, limit=limit, offset=offset, order=order, fields=fields)
                 return model
         except Exception as e:
             return {'status': False, 'error': str(e)}
