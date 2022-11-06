@@ -193,6 +193,20 @@ class OdooApiXMLRPC(http.Controller):
                 return model
         except Exception as e:
             return {'status': False, 'error': str(e)}
+        
+    # report #
+    @http.route('/odoo-api/object/report', type="json", auth='none', cors=CORS)
+    def odoo_api_report(self, model, id=None, report_name=None, db=None, login=None, password=None, **kw):
+        try:
+            uid = request.session.authenticate(db, login, password)
+            if uid:
+                import base64
+                #model = request.env[model].browse(uid).ref(report_name).render_qweb_pdf([id])[0]    # ver. 11, 12, 13
+                model = request.env[model].browse(uid).ref(report_name)._render_qweb_pdf([id])[0]    # ver. 14+
+                pdf = base64.b64encode(model)
+                return pdf
+        except Exception as e:
+            return {'status': False, 'error': str(e)}
 
     # action #
     # Model for action request, adapt for your need
